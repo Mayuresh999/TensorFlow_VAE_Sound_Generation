@@ -1,5 +1,5 @@
 from keras import Model
-from keras.layers import Input, Conv2D, ReLU, BatchNormalization, Flatten, Dense, Reshape, Conv2DTranspose, Activation
+from keras.layers import Input, Conv2D, ReLU, BatchNormalization, Flatten, Dense, Reshape, Conv2DTranspose, Activation, Lambda
 from keras import backend as K
 from keras.optimizers import Adam
 from keras.losses import MeanSquaredError
@@ -176,10 +176,25 @@ class Autoencoder:
         return x
     
     def _add_bottleneck(self, x):
-        '''flatten data and add bottleneck (Dense layer)'''
-        self._shape_before_bottleneck = K.int_shape(x)[1:]
+        """Flatten data and add bottleneck with Gaussian sampling (Dense layer)."""
+        self._shape_before_bottleneck = x.shape[1:]
         x = Flatten()(x)
-        x = Dense(self.latent_space_dim, name = "encoder_output")(x)
+        self.mu = Dense(self.latent_space_dim, name="mu")(x)
+        self.log_variance = Dense(self.latent_space_dim, name="log_variance")(x)
+        
+        def sample_point_from_normal_distribution(args):
+            mu, log_variance = args
+            s = mu.shape
+            epsilon = K.random_normal((s), mean=0.0, stddev=1.0)
+            sampled_point = mu + K.exp(log_variance / 2) * epsilon
+            return sampled_point
+        
+        def output_shape(input_shapes):
+            return input_shapes[0]
+
+        x = Lambda(sample_point_from_normal_distribution,
+                output_shape=output_shape,
+                name="encoder_output")([self.mu, self.log_variance])
         return x
     
 

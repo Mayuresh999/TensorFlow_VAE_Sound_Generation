@@ -1,5 +1,5 @@
 from autoencoder import Autoencoder
-from keras.datasets import mnist
+from tensorflow.keras.datasets import mnist
 
 
 LEARNING_RATE = 0.0005
