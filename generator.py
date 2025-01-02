@@ -4,7 +4,7 @@ import soundfile as sf
 from sound_generator import SoundGenerator
 from variational_autoencoder import VAE
 import pickle
-from train_vae import SPECTOGRAMS
+from train_vae import SPECTOGRAMS 
 
 HOP_LENGTH = 256
 SAVE_DIR_ORIGINAL = "samples/original/"
